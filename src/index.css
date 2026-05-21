@@ -1,0 +1,106 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-theme='truffle'] {
+  --brand-bg: #ffffff;
+  --brand-bg-soft: #f8f9fa;
+  --brand-text: #131a30;
+  --brand-text-muted: #4a5568;
+  --brand-accent: #a123e7;
+  --brand-accent-strong: #7300e2;
+  --brand-pink: #ff6aa1;
+  --brand-hero-bg: #131a30;
+  --brand-gradient: linear-gradient(135deg, #ff6aa1 0%, #a123e7 50%, #7300e2 100%);
+}
+
+html[data-theme='wwps'] {
+  --brand-bg: #ffffff;
+  --brand-bg-soft: #f1f5f4;
+  --brand-text: #0e2a3f;
+  --brand-text-muted: #4a5560;
+  --brand-accent: #2e9f9f;
+  --brand-accent-strong: #1b6fa8;
+  --brand-pink: #7dcc2a;
+  --brand-hero-bg: #000000;
+  --brand-gradient: linear-gradient(135deg, #7dcc2a 0%, #2e9f9f 50%, #1b6fa8 100%);
+}
+
+body {
+  margin: 0;
+  background: var(--brand-bg);
+  color: var(--brand-text);
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.placeholder-text {
+  color: var(--brand-text-muted);
+  font-style: italic;
+  opacity: 0.75;
+}
+
+.masked-blob {
+  filter: blur(3.5px);
+  letter-spacing: 0.18em;
+  user-select: none;
+}
+
+.brand-gradient-text {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.editable-text {
+  display: inline-block;
+  min-width: 1em;
+  border-radius: 4px;
+  padding: 0 4px;
+  margin: 0 -4px;
+  cursor: text;
+  outline: none;
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.editable-text:hover {
+  background: rgba(161, 35, 231, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(161, 35, 231, 0.35);
+}
+
+.editable-text:focus {
+  background: rgba(161, 35, 231, 0.06);
+  box-shadow: inset 0 0 0 2px var(--brand-accent);
+  cursor: text;
+}
+
+[data-theme='wwps'] .editable-text:hover {
+  background: rgba(46, 159, 159, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(46, 159, 159, 0.4);
+}
+
+[data-theme='wwps'] .editable-text:focus {
+  background: rgba(46, 159, 159, 0.08);
+  box-shadow: inset 0 0 0 2px var(--brand-accent);
+}
+
+.editable-text:empty::before {
+  content: attr(data-placeholder);
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+  opacity: 0.7;
+}

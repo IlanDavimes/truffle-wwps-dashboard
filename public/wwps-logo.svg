@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" aria-label="WWPS logo placeholder">
+  <defs>
+    <linearGradient id="wwps-ring" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#7DCC2A"/>
+      <stop offset="50%" stop-color="#2E9F9F"/>
+      <stop offset="100%" stop-color="#1B6FA8"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="92" fill="url(#wwps-ring)"/>
+  <circle cx="100" cy="100" r="68" fill="#000"/>
+  <g fill="#C0C0C0">
+    <g transform="translate(82,72)">
+      <circle r="14"/>
+      <g>
+        <rect x="-2" y="-19" width="4" height="6"/>
+        <rect x="-2" y="13" width="4" height="6"/>
+        <rect x="-19" y="-2" width="6" height="4"/>
+        <rect x="13" y="-2" width="6" height="4"/>
+      </g>
+      <circle r="6" fill="#000"/>
+    </g>
+    <g transform="translate(118,108)">
+      <circle r="12"/>
+      <g>
+        <rect x="-2" y="-17" width="4" height="5"/>
+        <rect x="-2" y="12" width="4" height="5"/>
+        <rect x="-17" y="-2" width="5" height="4"/>
+        <rect x="12" y="-2" width="5" height="4"/>
+      </g>
+      <circle r="5" fill="#000"/>
+    </g>
+    <g transform="translate(82,124)">
+      <circle r="10"/>
+      <g>
+        <rect x="-1.5" y="-14" width="3" height="4"/>
+        <rect x="-1.5" y="10" width="3" height="4"/>
+        <rect x="-14" y="-1.5" width="4" height="3"/>
+        <rect x="10" y="-1.5" width="4" height="3"/>
+      </g>
+      <circle r="4" fill="#000"/>
+    </g>
+  </g>
+  <text x="100" y="180" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#FFF" text-anchor="middle" letter-spacing="2">WWPS</text>
+</svg>
