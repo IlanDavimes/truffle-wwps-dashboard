@@ -89,7 +89,7 @@ async function callClaude(apiKey: string, model: string, rawText: string): Promi
     },
     body: JSON.stringify({
       model,
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: SYSTEM_PROMPT,
       messages: [
         {
@@ -117,13 +117,21 @@ export async function parseCV({ apiKey, rawText, onAttempt }: ParseOptions): Pro
     }
 
     if (response.ok) {
-      const data = (await response.json()) as { content?: { type: string; text?: string }[] }
+      const data = (await response.json()) as {
+        content?: { type: string; text?: string }[]
+        stop_reason?: string
+      }
       const textBlock = data.content?.find((b) => b.type === 'text')?.text ?? ''
       const jsonText = stripJsonFences(textBlock).trim()
       try {
         const parsed = JSON.parse(jsonText) as Consultant
         return normalise(parsed)
       } catch {
+        if (data.stop_reason === 'max_tokens') {
+          throw new Error(
+            `CV is too long for the output budget — Claude got cut off mid-response (stop_reason: max_tokens). This is rare; usually means the candidate has 15+ jobs of detailed history. Try shortening the CV (e.g. drop very old jobs) and re-import, or tell me and I'll switch to a model with a larger output window.`,
+          )
+        }
         throw new Error(`Claude returned non-JSON output. First 400 chars: ${jsonText.slice(0, 400)}`)
       }
     }
