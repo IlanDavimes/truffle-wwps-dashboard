@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { IconArrowLeft, IconPencil, IconRefresh } from '@tabler/icons-react'
 import { getConsultant } from '../data/consultants'
+import { getImportedConsultants } from '../lib/draftStore'
 import ConsultantDetail from '../components/ConsultantDetail'
 import { useConsultantEditor } from '../hooks/useConsultantEditor'
 import { useReveal } from '../hooks/useReveal'
@@ -38,6 +39,8 @@ export default function ConsultantPage() {
 
 function ConsultantPageInner({ seed }: { seed: ReturnType<typeof getConsultant> & object }) {
   const isDraft = seed.status === 'draft'
+  const isImported = getImportedConsultants().some((c) => c.id === seed.id)
+  const editable = isDraft || isImported
   const { data, update, reset } = useConsultantEditor(seed)
   const { isRevealed } = useReveal()
   const { setHandler } = useDownload()
@@ -58,7 +61,7 @@ function ConsultantPageInner({ seed }: { seed: ReturnType<typeof getConsultant> 
           <IconArrowLeft size={13} />
           Back to directory
         </Link>
-        {isDraft && (
+        {editable && (
           <div className="flex items-center gap-2">
             <span
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium"
@@ -69,24 +72,26 @@ function ConsultantPageInner({ seed }: { seed: ReturnType<typeof getConsultant> 
               }}
             >
               <IconPencil size={12} />
-              Edit mode — click any field to edit. Edits autosave to your browser.
+              Edit mode — click any field (including the avatar) to edit. Edits autosave to your browser.
             </span>
-            <button
-              type="button"
-              onClick={reset}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition hover:opacity-80"
-              style={{
-                color: 'var(--brand-text-muted)',
-                borderColor: 'rgba(0,0,0,0.15)',
-              }}
-            >
-              <IconRefresh size={12} />
-              Reset template
-            </button>
+            {isDraft && (
+              <button
+                type="button"
+                onClick={reset}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium border transition hover:opacity-80"
+                style={{
+                  color: 'var(--brand-text-muted)',
+                  borderColor: 'rgba(0,0,0,0.15)',
+                }}
+              >
+                <IconRefresh size={12} />
+                Reset template
+              </button>
+            )}
           </div>
         )}
       </div>
-      <ConsultantDetail consultant={data} editable={isDraft} onUpdate={update} />
+      <ConsultantDetail consultant={data} editable={editable} onUpdate={update} />
     </main>
   )
 }

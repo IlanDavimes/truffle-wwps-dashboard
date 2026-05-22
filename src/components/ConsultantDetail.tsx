@@ -377,6 +377,7 @@ function Hero({
               <EditableText
                 value={consultant.suggestedRole}
                 editable={editable}
+                placeholder="click to add — e.g. Senior Project Planner"
                 onChange={set(['suggestedRole'])}
               />
             </span>
@@ -507,10 +508,31 @@ function Hero({
             />
           </div>
           <div
-            className="relative w-28 h-28 rounded-full flex items-center justify-center font-medium text-3xl text-white"
+            onClick={
+              editable
+                ? () => {
+                    const current = consultant.avatar ?? ''
+                    const next = window.prompt(
+                      'Photo URL (e.g. /avatars/Alix Trublet De Nermont.jpg). Leave empty to remove the photo.',
+                      current,
+                    )
+                    if (next !== null) set(['avatar'])(next.trim())
+                  }
+                : undefined
+            }
+            title={editable ? 'Click to set photo URL' : undefined}
+            className={`relative w-28 h-28 rounded-full overflow-hidden flex items-center justify-center font-medium text-3xl text-white ${editable ? 'cursor-pointer ring-2 ring-white/30 hover:ring-white/70 transition' : ''}`}
             style={{ background: 'var(--brand-gradient)' }}
           >
-            {initials || '••'}
+            {consultant.avatar ? (
+              <img
+                src={consultant.avatar}
+                alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+            ) : (
+              initials || '••'
+            )}
             {consultant.videoEnabled && consultant.videoUrl && (
               <span
                 className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white flex items-center justify-center"

@@ -1,6 +1,7 @@
 import type { Consultant } from './types'
+import { getImportedConsultants } from '../lib/draftStore'
 
-export const consultants: Consultant[] = [
+const seedConsultants: Consultant[] = [
   {
     id: 'sidumisile-siziba',
     status: 'active',
@@ -10,7 +11,7 @@ export const consultants: Consultant[] = [
     currentRole: 'Construction Manager & Urban Planner',
     summary:
       "Motivated and detail-oriented professional with a Bachelor of Social Science and Honours Degree in Regional and Urban Planning, and a Master's Degree in Construction Management. Strong understanding of urban development, construction processes, and sustainability within the built environment. Equipped with excellent analytical, project management, and problem-solving skills. Able to adapt quickly to new technologies and industry practices, including BIM.",
-    avatar: undefined,
+    avatar: '/avatars/Sidumisile_Siziba.png',
     videoUrl: '',
     videoEnabled: false,
     contact: {
@@ -113,7 +114,7 @@ export const consultants: Consultant[] = [
     currentRole: 'Project Planner',
     summary:
       "Construction and infrastructure project planner with a decade of progression from mechanical fitter to senior site planner. Strong command of Primavera P6, MS Projects, Earned Value Management, and FIDIC / NEC3 contract conditions. BA in Industrial & Organizational Psychology paired with hands-on technical certifications across construction PM, quantity surveying, and CAD. Currently planning live civils work at Regal Civil Projects Africa.",
-    avatar: undefined,
+    avatar: '/avatars/Aaron Phakathi.png',
     videoUrl: '',
     videoEnabled: false,
     contact: {
@@ -280,6 +281,12 @@ export const consultants: Consultant[] = [
   },
 ]
 
+export const consultants = seedConsultants
+
+export function getAllConsultants(): Consultant[] {
+  return [...seedConsultants, ...getImportedConsultants()]
+}
+
 export function getConsultant(id: string): Consultant | undefined {
-  return consultants.find((c) => c.id === id)
+  return getAllConsultants().find((c) => c.id === id)
 }

@@ -1,27 +1,38 @@
 import { Link } from 'react-router-dom'
-import { IconArrowRight, IconCircleDot, IconClock } from '@tabler/icons-react'
-import { consultants } from '../data/consultants'
+import { IconArrowRight, IconCircleDot, IconClock, IconUpload } from '@tabler/icons-react'
+import { getAllConsultants } from '../data/consultants'
 import { useReveal } from '../hooks/useReveal'
 
 export default function DirectoryPage() {
   const { isRevealed } = useReveal()
+  const all = getAllConsultants()
 
   return (
     <main className="max-w-5xl mx-auto px-6 lg:px-10 py-10">
-      <div className="mb-8">
-        <h1
-          className="text-3xl font-medium tracking-tight mb-2"
-          style={{ color: 'var(--brand-text)' }}
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1
+            className="text-3xl font-medium tracking-tight mb-2"
+            style={{ color: 'var(--brand-text)' }}
+          >
+            Consultant directory
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--brand-text-muted)' }}>
+            {all.length} {all.length === 1 ? 'profile' : 'profiles'}. Click any to view the full CV.
+          </p>
+        </div>
+        <Link
+          to="/import"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white no-underline transition hover:opacity-90"
+          style={{ background: 'var(--brand-gradient)' }}
         >
-          Consultant directory
-        </h1>
-        <p className="text-sm" style={{ color: 'var(--brand-text-muted)' }}>
-          Prototype seed — two profiles. Sidumisile is a fully-populated <em>active</em> consultant. The Template is the empty-state preview used when creating new profiles.
-        </p>
+          <IconUpload size={14} />
+          Import CV
+        </Link>
       </div>
 
       <div className="space-y-2">
-        {consultants.map((c) => {
+        {all.map((c) => {
           const initials = c.firstName
             .split(' ')
             .map((s) => s[0])
@@ -48,10 +59,18 @@ export default function DirectoryPage() {
               }}
             >
               <div
-                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-medium text-sm shrink-0"
+                className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-white font-medium text-sm shrink-0"
                 style={{ background: 'var(--brand-gradient)' }}
               >
-                {initials || '••'}
+                {c.avatar ? (
+                  <img
+                    src={c.avatar}
+                    alt=""
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : (
+                  initials || '••'
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -94,7 +113,7 @@ export default function DirectoryPage() {
 function StatusBadge({ status }: { status: 'draft' | 'active' | 'archived' }) {
   const map = {
     active: { icon: <IconCircleDot size={11} />, label: 'Active', color: '#10B981', bg: 'rgba(16,185,129,0.12)' },
-    draft: { icon: <IconClock size={11} />, label: 'Draft template', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)' },
+    draft: { icon: <IconClock size={11} />, label: 'Draft', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)' },
     archived: { icon: <IconCircleDot size={11} />, label: 'Archived', color: '#6B7280', bg: 'rgba(107,114,128,0.12)' },
   }
   const m = map[status]
