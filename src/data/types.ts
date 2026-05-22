@@ -70,4 +70,5 @@ export interface Consultant {
   experience: Experience[]
   education: Education[]
   references: Reference[]
+  rfpNotes?: string
 }
