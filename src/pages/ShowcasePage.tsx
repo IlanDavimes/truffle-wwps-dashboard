@@ -28,7 +28,10 @@ import { useTheme } from '../themes/ThemeContext'
 import { exportConsultantDocx } from '../lib/exportDocx'
 import EditableText from '../components/EditableText'
 
-type ShowcaseConsultant = Consultant & { rfpNotes?: string }
+type ShowcaseConsultant = Consultant & {
+  rfpNotes?: string
+  qualifiers?: { years?: string; trained?: string; qualified?: string }
+}
 
 function maskedName(c: Consultant): string {
   const initial = c.surname?.trim()?.[0] ?? ''
@@ -550,13 +553,18 @@ function ShowcaseDetail({
             </div>
           </div>
           <div className="text-right space-y-3 min-w-[120px]">
-            {q.years && (
+            {(isAdmin || (consultant.qualifiers?.years ?? q.years)) && (
               <div>
                 <div
                   className="text-2xl font-medium"
                   style={{ color: 'var(--brand-accent-strong)' }}
                 >
-                  {q.years}
+                  <EditableText
+                    value={consultant.qualifiers?.years ?? q.years}
+                    editable={isAdmin}
+                    placeholder="11+"
+                    onChange={(v) => onUpdate(['qualifiers', 'years'], v)}
+                  />
                 </div>
                 <div
                   className="text-[10px] uppercase tracking-widest"
@@ -566,13 +574,18 @@ function ShowcaseDetail({
                 </div>
               </div>
             )}
-            {q.trained && (
+            {(isAdmin || (consultant.qualifiers?.trained ?? q.trained)) && (
               <div>
                 <div
                   className="text-sm font-medium"
                   style={{ color: 'var(--brand-text)' }}
                 >
-                  {q.trained}
+                  <EditableText
+                    value={consultant.qualifiers?.trained ?? q.trained}
+                    editable={isAdmin}
+                    placeholder="Most recent company"
+                    onChange={(v) => onUpdate(['qualifiers', 'trained'], v)}
+                  />
                 </div>
                 <div
                   className="text-[10px] uppercase tracking-widest"
@@ -582,13 +595,18 @@ function ShowcaseDetail({
                 </div>
               </div>
             )}
-            {q.qualified && (
+            {(isAdmin || (consultant.qualifiers?.qualified ?? q.qualified)) && (
               <div>
                 <div
                   className="text-sm font-medium"
                   style={{ color: 'var(--brand-text)' }}
                 >
-                  {q.qualified}
+                  <EditableText
+                    value={consultant.qualifiers?.qualified ?? q.qualified}
+                    editable={isAdmin}
+                    placeholder="Top qualification"
+                    onChange={(v) => onUpdate(['qualifiers', 'qualified'], v)}
+                  />
                 </div>
                 <div
                   className="text-[10px] uppercase tracking-widest"
