@@ -4,6 +4,7 @@ import { IconArrowLeft, IconLoader2, IconPencil } from '@tabler/icons-react'
 import { fetchConsultant, upsertConsultant } from '../lib/consultantRepo'
 import type { Consultant } from '../data/types'
 import ConsultantDetail from '../components/ConsultantDetail'
+import Comments from '../components/Comments'
 import { useReveal } from '../hooks/useReveal'
 import { useDownload } from '../hooks/useDownload'
 import { exportConsultantDocx } from '../lib/exportDocx'
@@ -155,6 +156,7 @@ function ConsultantPageInner({ seed }: { seed: Consultant }) {
         </div>
       )}
       <ConsultantDetail consultant={data} editable={editable} onUpdate={update} />
+      {!isTemplate && <Comments consultantId={data.id} />}
     </main>
   )
 }
