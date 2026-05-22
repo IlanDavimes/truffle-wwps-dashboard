@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { IconArrowRight, IconCircleDot, IconClock, IconLoader2, IconUpload } from '@tabler/icons-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { IconArrowRight, IconCircleDot, IconClock, IconLoader2, IconShieldCheck, IconUpload } from '@tabler/icons-react'
 import { fetchAllConsultants } from '../lib/consultantRepo'
 import type { Consultant } from '../data/types'
 import { useReveal } from '../hooks/useReveal'
 
 export default function DirectoryPage() {
   const { isRevealed } = useReveal()
+  const [searchParams] = useSearchParams()
+  const isAdmin = searchParams.get('admin') === '1'
   const [all, setAll] = useState<Consultant[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -43,6 +45,8 @@ export default function DirectoryPage() {
     )
   }
 
+  const visible = isAdmin ? all : all.filter((c) => c.status === 'active')
+
   return (
     <main className="max-w-5xl mx-auto px-6 lg:px-10 py-10">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
@@ -52,9 +56,19 @@ export default function DirectoryPage() {
             style={{ color: 'var(--brand-text)' }}
           >
             Consultant directory
+            {isAdmin && (
+              <span
+                className="ml-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium align-middle"
+                style={{ background: 'var(--brand-bg-soft)', color: 'var(--brand-accent-strong)', border: '0.5px solid var(--brand-accent)' }}
+              >
+                <IconShieldCheck size={11} />
+                Admin view
+              </span>
+            )}
           </h1>
           <p className="text-sm" style={{ color: 'var(--brand-text-muted)' }}>
-            {all.length} {all.length === 1 ? 'profile' : 'profiles'}. Click any to view the full CV.
+            {visible.length} {visible.length === 1 ? 'profile' : 'profiles'}
+            {isAdmin && all.length !== visible.length ? ` (${all.length - visible.length} draft hidden from clients)` : ''}. Click any to view the full CV.
           </p>
         </div>
         <Link
@@ -68,7 +82,7 @@ export default function DirectoryPage() {
       </div>
 
       <div className="space-y-2">
-        {all.map((c) => {
+        {visible.map((c) => {
           const initials = c.firstName
             .split(' ')
             .map((s) => s[0])
