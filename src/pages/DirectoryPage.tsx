@@ -51,7 +51,8 @@ export default function DirectoryPage() {
     const counts = new Map<string, number>()
     baseList.forEach((c) => {
       c.badges?.forEach((b) => {
-        counts.set(b.label, (counts.get(b.label) ?? 0) + 1)
+        const key = normalizeLabel(b.label)
+        if (key) counts.set(key, (counts.get(key) ?? 0) + 1)
       })
     })
     return [...counts.entries()]
@@ -64,29 +65,12 @@ export default function DirectoryPage() {
     const q = query.trim().toLowerCase()
     return baseList.filter((c) => {
       if (onlyShortlist && !shortlistedIds.includes(c.id)) return false
+      const haystack = consultantHaystack(c)
       if (activeChips.length > 0) {
-        const labels = (c.badges ?? []).map((b) => b.label.toLowerCase())
-        const ok = activeChips.every((chip) => labels.includes(chip.toLowerCase()))
+        const ok = activeChips.every((chip) => haystack.includes(chip.toLowerCase()))
         if (!ok) return false
       }
-      if (q) {
-        const haystack = [
-          c.firstName,
-          c.surname,
-          c.currentRole,
-          c.suggestedRole,
-          c.summary,
-          c.contact?.location,
-          ...(c.badges ?? []).map((b) => b.label),
-          ...(c.industries ?? []),
-          ...(c.readiness ?? []),
-          ...(c.skills ?? []).flatMap((s) => [s.category, ...s.items]),
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase()
-        if (!haystack.includes(q)) return false
-      }
+      if (q && !haystack.includes(q)) return false
       return true
     })
   }, [baseList, query, activeChips, onlyShortlist, shortlistedIds])
@@ -339,6 +323,28 @@ export default function DirectoryPage() {
       </div>
     </main>
   )
+}
+
+function normalizeLabel(label: string): string {
+  return label.replace(/\s*\([^)]*\)/g, '').replace(/\s+/g, ' ').trim()
+}
+
+function consultantHaystack(c: Consultant): string {
+  return [
+    c.firstName,
+    c.surname,
+    c.currentRole,
+    c.suggestedRole,
+    c.summary,
+    c.contact?.location,
+    ...(c.badges ?? []).map((b) => b.label),
+    ...(c.industries ?? []),
+    ...(c.readiness ?? []),
+    ...(c.skills ?? []).flatMap((s) => [s.category, ...s.items]),
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
 }
 
 function StatusBadge({ status }: { status: 'draft' | 'active' | 'archived' }) {
