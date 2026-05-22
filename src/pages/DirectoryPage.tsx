@@ -1,11 +1,47 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { IconArrowRight, IconCircleDot, IconClock, IconUpload } from '@tabler/icons-react'
-import { getAllConsultants } from '../data/consultants'
+import { IconArrowRight, IconCircleDot, IconClock, IconLoader2, IconUpload } from '@tabler/icons-react'
+import { fetchAllConsultants } from '../lib/consultantRepo'
+import type { Consultant } from '../data/types'
 import { useReveal } from '../hooks/useReveal'
 
 export default function DirectoryPage() {
   const { isRevealed } = useReveal()
-  const all = getAllConsultants()
+  const [all, setAll] = useState<Consultant[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchAllConsultants()
+      .then((rows) => {
+        if (!cancelled) setAll(rows)
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : String(err))
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (error) {
+    return (
+      <main className="max-w-5xl mx-auto px-6 lg:px-10 py-10">
+        <p className="text-sm" style={{ color: '#B91C1C' }}>
+          Could not load consultants: {error}
+        </p>
+      </main>
+    )
+  }
+
+  if (all === null) {
+    return (
+      <main className="max-w-5xl mx-auto px-6 lg:px-10 py-10 flex items-center gap-2 text-sm" style={{ color: 'var(--brand-text-muted)' }}>
+        <IconLoader2 size={16} className="animate-spin" />
+        Loading consultants...
+      </main>
+    )
+  }
 
   return (
     <main className="max-w-5xl mx-auto px-6 lg:px-10 py-10">

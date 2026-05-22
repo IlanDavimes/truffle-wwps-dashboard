@@ -16,7 +16,8 @@
     "@tabler/icons-react": "^3.44.0",
     "docx": "^9.6.1",
     "pdfjs-dist": "^5.7.284",
-    "mammoth": "^1.12.0"
+    "mammoth": "^1.12.0",
+    "@supabase/supabase-js": "^2.106.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

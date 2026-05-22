@@ -14,14 +14,10 @@ import { extractTextFromFile } from '../lib/cvExtract'
 import { parseCV } from '../lib/cvParse'
 import type { Consultant } from '../data/types'
 import ConsultantDetail from '../components/ConsultantDetail'
-import {
-  getStoredApiKey,
-  setStoredApiKey,
-  saveImportedConsultant,
-  getImportedConsultants,
-} from '../lib/draftStore'
+import { getStoredApiKey, setStoredApiKey } from '../lib/draftStore'
+import { fetchAllConsultants, upsertConsultant } from '../lib/consultantRepo'
 
-type Phase = 'idle' | 'extracting' | 'parsing' | 'preview' | 'saved' | 'error'
+type Phase = 'idle' | 'extracting' | 'parsing' | 'preview' | 'saving' | 'saved' | 'error'
 
 export default function ImportPage() {
   const navigate = useNavigate()
@@ -62,7 +58,8 @@ export default function ImportPage() {
       setPhase('parsing')
       setProgress(`Claude is parsing ${extracted.text.length.toLocaleString()} characters...`)
       const parsed = await parseCV({ apiKey, rawText: extracted.text })
-      const withUniqueId = ensureUniqueId(parsed)
+      const existingIds = (await fetchAllConsultants()).map((c) => c.id)
+      const withUniqueId = ensureUniqueId(parsed, existingIds)
       setDraft(withUniqueId)
       setPhase('preview')
     } catch (err) {
@@ -72,19 +69,21 @@ export default function ImportPage() {
     }
   }
 
-  const onPublish = () => {
+  const savePersisted = async (status: 'active' | 'draft') => {
     if (!draft) return
-    saveImportedConsultant({ ...draft, status: 'active' })
-    setPhase('saved')
-    setTimeout(() => navigate(`/consultants/${draft.id}`), 800)
+    setPhase('saving')
+    try {
+      await upsertConsultant({ ...draft, status })
+      setPhase('saved')
+      setTimeout(() => navigate(`/consultants/${draft.id}`), 600)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+      setPhase('error')
+    }
   }
 
-  const onSaveDraft = () => {
-    if (!draft) return
-    saveImportedConsultant({ ...draft, status: 'draft' })
-    setPhase('saved')
-    setTimeout(() => navigate(`/consultants/${draft.id}`), 800)
-  }
+  const onPublish = () => void savePersisted('active')
+  const onSaveDraft = () => void savePersisted('draft')
 
   const onUpdate = (path: (string | number)[], value: string) => {
     if (!draft) return
@@ -117,11 +116,10 @@ export default function ImportPage() {
           Import a CV
         </h1>
         <p className="text-sm" style={{ color: 'var(--brand-text-muted)' }}>
-          Drop a PDF or Word CV. Claude extracts the structured fields, you review, then publish.
+          Drop a PDF or Word CV. Claude extracts the structured fields, you review, then publish to the live database.
         </p>
       </div>
 
-      {/* API key panel */}
       <div
         className="rounded-xl p-4 mb-6 border"
         style={{
@@ -157,12 +155,10 @@ export default function ImportPage() {
           }}
         />
         <p className="text-xs mt-2" style={{ color: 'var(--brand-text-muted)' }}>
-          Key stays in your browser's localStorage; nothing is sent to Truffle's servers. Before
-          public deploy we'll move this server-side so end users never need a key.
+          Key stays in your browser; only sent to Anthropic directly. Saved profiles go to the shared Supabase database.
         </p>
       </div>
 
-      {/* Drop zone */}
       {phase === 'idle' || phase === 'error' ? (
         <div
           onDragOver={(e) => {
@@ -210,8 +206,7 @@ export default function ImportPage() {
         </div>
       ) : null}
 
-      {/* Progress */}
-      {(phase === 'extracting' || phase === 'parsing') && (
+      {(phase === 'extracting' || phase === 'parsing' || phase === 'saving') && (
         <div
           className="rounded-xl p-5 mb-4 flex items-center gap-3"
           style={{ background: 'var(--brand-bg-soft)' }}
@@ -219,7 +214,7 @@ export default function ImportPage() {
           <IconLoader2 size={20} className="animate-spin" style={{ color: 'var(--brand-accent)' }} />
           <div>
             <div className="text-sm font-medium" style={{ color: 'var(--brand-text)' }}>
-              {phase === 'extracting' ? 'Reading file...' : 'Parsing with Claude...'}
+              {phase === 'extracting' ? 'Reading file...' : phase === 'parsing' ? 'Parsing with Claude...' : 'Saving to database...'}
             </div>
             <div className="text-xs" style={{ color: 'var(--brand-text-muted)' }}>
               {progress}
@@ -228,7 +223,6 @@ export default function ImportPage() {
         </div>
       )}
 
-      {/* Error */}
       {phase === 'error' && error && (
         <div
           className="rounded-xl p-4 mb-4 flex items-start gap-3 border"
@@ -241,7 +235,6 @@ export default function ImportPage() {
         </div>
       )}
 
-      {/* Preview */}
       {phase === 'preview' && draft && (
         <>
           <div
@@ -293,15 +286,12 @@ export default function ImportPage() {
             </div>
           </div>
           <p className="text-xs mb-4" style={{ color: 'var(--brand-text-muted)' }}>
-            Click any field below to edit before publishing. Same inline-edit pattern as the
-            template — Claude will have made some guesses, especially around suggested role and
-            references; review and tweak.
+            Click any field below to edit before publishing. Claude will have made some guesses, especially around suggested role and references; review and tweak.
           </p>
           <ConsultantDetail consultant={draft} editable={true} onUpdate={onUpdate} />
         </>
       )}
 
-      {/* Saved */}
       {phase === 'saved' && (
         <div
           className="rounded-xl p-5 flex items-center gap-3"
@@ -309,7 +299,7 @@ export default function ImportPage() {
         >
           <IconCheck size={20} style={{ color: '#059669' }} />
           <div className="text-sm" style={{ color: '#065F46' }}>
-            Saved. Redirecting to the consultant page...
+            Saved to database. Redirecting...
           </div>
         </div>
       )}
@@ -317,8 +307,7 @@ export default function ImportPage() {
   )
 }
 
-function ensureUniqueId(c: Consultant): Consultant {
-  const existing = getImportedConsultants().map((x) => x.id)
+function ensureUniqueId(c: Consultant, existing: string[]): Consultant {
   if (!existing.includes(c.id) && c.id) return c
   const base = (c.id || `${c.firstName}-${c.surname}`.toLowerCase().replace(/[^a-z0-9]+/g, '-')) || 'consultant'
   let candidate = base
